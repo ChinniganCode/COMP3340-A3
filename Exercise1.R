@@ -1,4 +1,3 @@
-# Load libraries and read the dataset
 library("cccd")
 library("igraph")
 
