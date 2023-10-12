@@ -1,0 +1,50 @@
+library("foreign")
+library("RWeka")
+library("arules")
+
+# Read the dataset
+data <- read.csv("datasets/USPresidency.csv", header = TRUE, sep = ",")
+#prevent numeric
+data$Year <- as.character(data$Year)
+# Convert 0 to '?' and 1 to the respective 'Q' column name
+
+to_transaction <- function(df) {
+  for (col in names(df)) {
+    print(typeof(col))
+    if (startsWith(col, "Q")) {
+      df[df[col] == 0, col] <- as.character('?')
+      df[df[col] == 1, col] <- col
+    }
+  }
+  return(df)
+}
+remove_single_quotes <- function(arff_file_path) {
+  arff_content <- readLines(arff_file_path, warn = FALSE)
+  arff_content <- gsub("'", "", arff_content)
+  writeLines(arff_content, con = arff_file_path)
+}
+print("START")
+# Split the dataset based on the 'Target' value
+incumbent_data <- subset(data, Target == 1)
+challenger_data <- subset(data, Target == 0)
+
+# Convert to desired format
+incumbent_data <- to_transaction(incumbent_data)
+challenger_data <- to_transaction(challenger_data)
+
+# Save as .arff format
+
+write.arff(x=incumbent_data, file = "outputs/US-Incumbent.arff")
+write.arff(x=challenger_data, file = "outputs/US-Challenger.arff")
+
+
+remove_single_quotes("outputs/US-Incumbent.arff")
+remove_single_quotes("outputs/US-Challenger.arff")
+
+print("arff files saved")
+incumbent_file <- read.arff("outputs/US-Incumbent.arff")
+challenger_file <- read.arff("outputs/US-Challenger.arff")
+print("arff files read")
+
+#exclude tarkget
+Apriori(edited_file)
