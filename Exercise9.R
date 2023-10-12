@@ -9,14 +9,16 @@ data$Year <- as.character(data$Year)
 # Convert 0 to '?' and 1 to the respective 'Q' column name
 
 to_transaction <- function(df) {
-  for (col in names(df)) {
-    print(typeof(col))
-    if (startsWith(col, "Q")) {
-      df[df[col] == 0, col] <- as.character('?')
-      df[df[col] == 1, col] <- col
-    }
-  }
-  return(df)
+  # Remove non-Q columns
+  df <- df[, startsWith(names(df), "Q")]
+
+  # Create a transaction list
+  trans_list <- apply(df, 1, function(row) {
+    items <- names(row)[which(row == 1)]
+    return(items)
+  })
+
+  return(as(trans_list, "transactions"))
 }
 remove_single_quotes <- function(arff_file_path) {
   arff_content <- readLines(arff_file_path, warn = FALSE)
@@ -29,9 +31,24 @@ incumbent_data <- subset(data, Target == 1)
 challenger_data <- subset(data, Target == 0)
 
 # Convert to desired format
-incumbent_data <- to_transaction(incumbent_data)
-challenger_data <- to_transaction(challenger_data)
+incumbent_trans  <- to_transaction(incumbent_data)
+challenger_trans  <- to_transaction(challenger_data)
 
+# Apply Apriori on incumbent transactions
+incumbent_rules <- apriori(incumbent_trans,
+                           parameter = list(supp = 0.5, conf = 0.8, target = "rules"))
+
+# Apply Apriori on challenger transactions
+challenger_rules <- apriori(challenger_trans,
+                            parameter = list(supp = 0.5, conf = 0.8, target = "rules"))
+
+print("Apriori applied")
+
+# Inspect the rules
+inspect(incumbent_rules)
+inspect(challenger_rules)
+
+print("Data converted to transactions")
 # Save as .arff format
 
 write.arff(x=incumbent_data, file = "outputs/US-Incumbent.arff")
