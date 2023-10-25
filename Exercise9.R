@@ -35,17 +35,17 @@ incumbent_trans  <- to_transaction(incumbent_data)
 challenger_trans  <- to_transaction(challenger_data)
 
 # Apply Apriori on incumbent transactions
-incumbent_rules <- apriori(incumbent_trans,
-                           parameter = list(supp = 0.5, conf = 0.8, target = "rules"))
+incumbent_rules <- apriori(incumbent_trans)
 
 # Apply Apriori on challenger transactions
-challenger_rules <- apriori(challenger_trans,
-                            parameter = list(supp = 0.5, conf = 0.8, target = "rules"))
+challenger_rules <- apriori(challenger_trans)
 
 print("Apriori applied")
 
 # Inspect the rules
+print("INCUMENBENT RULES")
 inspect(incumbent_rules)
+print("CHALLENGER RULES")
 inspect(challenger_rules)
 
 print("Data converted to transactions")
@@ -54,14 +54,14 @@ print("Data converted to transactions")
 write.arff(x=incumbent_data, file = "outputs/US-Incumbent.arff")
 write.arff(x=challenger_data, file = "outputs/US-Challenger.arff")
 
-
-remove_single_quotes("outputs/US-Incumbent.arff")
-remove_single_quotes("outputs/US-Challenger.arff")
-
-print("arff files saved")
-incumbent_file <- read.arff("outputs/US-Incumbent.arff")
-challenger_file <- read.arff("outputs/US-Challenger.arff")
-print("arff files read")
-
-#exclude tarkget
-Apriori(edited_file)
+#
+# remove_single_quotes("outputs/US-Incumbent.arff")
+# remove_single_quotes("outputs/US-Challenger.arff")
+#
+# print("arff files saved")
+# incumbent_file <- read.arff("outputs/US-Incumbent.arff")
+# challenger_file <- read.arff("outputs/US-Challenger.arff")
+# print("arff files read")
+#
+# #exclude tarkget
+# Apriori(edited_file)
