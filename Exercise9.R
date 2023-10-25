@@ -1,67 +1,39 @@
-library("foreign")
-library("RWeka")
-library("arules")
+library(dplyr)
 
-# Read the dataset
-data <- read.csv("datasets/USPresidency.csv", header = TRUE, sep = ",")
-#prevent numeric
-data$Year <- as.character(data$Year)
-# Convert 0 to '?' and 1 to the respective 'Q' column name
+# Read the CSV file
+data <- read.csv("datasets/USPresidency.csv", header = TRUE)
 
-to_transaction <- function(df) {
-  # Remove non-Q columns
-  df <- df[, startsWith(names(df), "Q")]
+incumbents <- filter(data, Target == 1)
+challengers <- filter(data, Target == 0)
 
-  # Create a transaction list
-  trans_list <- apply(df, 1, function(row) {
-    items <- names(row)[which(row == 1)]
-    return(items)
+generate_arff <- function(df, relation_name) {
+  header <- sprintf("@RELATION %s\n\n", relation_name)
+
+  attributes <- sapply(names(df), function(att) {
+    if (att != "Year" && att != "Target") {
+      return(sprintf("@ATTRIBUTE %s {0, 1}", att))
+    }
   })
 
-  return(as(trans_list, "transactions"))
+  attributes <- attributes[!is.na(attributes)]
+
+  instances <- apply(df[, -c(1, 14)], 1, function(row) {
+    paste(row, collapse = ",")
+  })
+
+  arff_content <- paste(
+    header,
+    paste(attributes, collapse = "\n"),
+    "\n@DATA\n",
+    paste(instances, collapse = "\n")
+  )
+
+  return(arff_content)
 }
-remove_single_quotes <- function(arff_file_path) {
-  arff_content <- readLines(arff_file_path, warn = FALSE)
-  arff_content <- gsub("'", "", arff_content)
-  writeLines(arff_content, con = arff_file_path)
-}
-print("START")
-# Split the dataset based on the 'Target' value
-incumbent_data <- subset(data, Target == 1)
-challenger_data <- subset(data, Target == 0)
 
-# Convert to desired format
-incumbent_trans  <- to_transaction(incumbent_data)
-challenger_trans  <- to_transaction(challenger_data)
+# Write to ARFF files
+incumbents_arff <- generate_arff(incumbents, "incumbents")
+writeLines(incumbents_arff, "outputs/incumbents.arff")
 
-# Apply Apriori on incumbent transactions
-incumbent_rules <- apriori(incumbent_trans)
-
-# Apply Apriori on challenger transactions
-challenger_rules <- apriori(challenger_trans)
-
-print("Apriori applied")
-
-# Inspect the rules
-print("INCUMENBENT RULES")
-inspect(incumbent_rules)
-print("CHALLENGER RULES")
-inspect(challenger_rules)
-
-print("Data converted to transactions")
-# Save as .arff format
-
-write.arff(x=incumbent_data, file = "outputs/US-Incumbent.arff")
-write.arff(x=challenger_data, file = "outputs/US-Challenger.arff")
-
-#
-# remove_single_quotes("outputs/US-Incumbent.arff")
-# remove_single_quotes("outputs/US-Challenger.arff")
-#
-# print("arff files saved")
-# incumbent_file <- read.arff("outputs/US-Incumbent.arff")
-# challenger_file <- read.arff("outputs/US-Challenger.arff")
-# print("arff files read")
-#
-# #exclude tarkget
-# Apriori(edited_file)
+challengers_arff <- generate_arff(challengers, "challengers")
+writeLines(challengers_arff, "outputs/challengers.arff")

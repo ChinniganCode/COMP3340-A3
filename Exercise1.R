@@ -2,6 +2,7 @@ library("cccd")
 library("igraph")
 
 concerete_dataset <- read.csv("datasets/Concrete_Data.csv", header = TRUE, sep = ",")
+#concerete_dataset <- concerete_dataset[1:25, ]
 
 get_species_rng <- function(dataset) {
   proteins_dist_matrix <- dist(dataset, method = "euclidean")
@@ -12,6 +13,7 @@ get_species_rng <- function(dataset) {
 }
 
 get_samples_rng <- function(dataset) {
+  write.csv(dataset, "outputs/samples_subset.csv")
   samples_dist_matrix <- dist(t(dataset), method = "euclidean")
   samples_dist_matrix <- as.matrix(samples_dist_matrix)
   write.csv(samples_dist_matrix, "outputs/samples_dist_matrix.csv")
@@ -36,10 +38,28 @@ compute_rng <- function(distance_matrix) {
       #vector of all dists from j to other points, ex i,j
       dists_from_j <- distance_matrix[j, -c(i, j)]
 
+      # print(paste0("pair_dist:", toString(pair_dist)))
+      # print(paste0("distsfromi:", toString(dists_from_i)))
+      # print(paste0("distsfromj:", toString(dists_from_j)))
       #if any point is closer to i or j than pair -> not rng
-      is_closer <- any(dists_from_i < pair_dist & dists_from_j < pair_dist)
+      is_closer <- FALSE
+      for (k in 1:length(dists_from_i)) {
+        comp_i <- dists_from_i[k] < pair_dist
+        comp_j <- dists_from_j[k] < pair_dist
+
+        # print(paste("Comparison of [", dists_from_i[k], "] is less than: [", pair_dist, "] IS:",comp_i))
+        # print(paste("Comparison of [", dists_from_j[k], "] is less than: [", pair_dist, "] IS:", comp_j))
+
+        if (comp_i & comp_j) {
+          is_closer <- TRUE
+          break
+        }
+      }
+      # print(paste("i:", i, "j:", j, "iscloser:", is_closer))
+
       #if none closer -> rng
       if (!is_closer) {
+        #print(paste("none closer= pair_dist:", pair_dist, "i:", i, "j:", j))
         #mirror for undir
         rng[i, j] <- pair_dist
         rng[j, i] <- pair_dist
@@ -55,13 +75,38 @@ samples_rng <- get_samples_rng(concerete_dataset)
 g1 <- graph_from_adjacency_matrix(samples_rng, mode = "undirected", weighted = TRUE)
 V(g1)$label <- colnames(concerete_dataset)
 E(g1)$weight <- round(E(g1)$weight, digits = 2)
-
-plot(g1, vertex.size = 5, edge.width = 0.5, edge.label = E(g1)$weight, main = "samples_rng")
+g1 <- as.undirected(g1)
+write.graph(g1, file = "outputs/samples_rng.graphml", format = "graphml")
+layout <- layout_with_fr(g2)
+plot(g1,
+     layout = layout,
+     edge.curved = 0.2,
+     vertex.size = 5,
+     label.color="black",
+     label.cex=0.2,
+     color="black",
+     vertex.color = "red",
+     edge.label= E(g1)$weight,
+     main = "species_rng")
 
 
 species_rng <- get_species_rng(concerete_dataset)
-g2 <- graph_from_adjacency_matrix(species_rng, mode = "undirected", weighted = TRUE)
+write.csv(species_rng, "outputs/species_rng.csv")
+node_lables <-
+g2 <- graph_from_adjacency_matrix(species_rng, mode = "undirected", weighted = TRUE, diag = TRUE)
 E(g2)$weight <- round(E(g2)$weight, digits = 2)
-layout <- layout_with_fr(g2)
-plot(g2, layout = layout, vertex.size = 2, vertex.label = NA, edge.width = 1, edge.label = NA, main = "species_rng")
+V(g2)$label <- seq_len(vcount(g2))
+g2 <- as.undirected(g2)
+write.graph(g2, file = "outputs/species_rng.graphml", format = "graphml")
 
+layout <- layout_with_fr(g2)
+plot(g2,
+     layout = layout,
+     edge.curved = 0.2,
+     vertex.size = 5,
+     label.color="black",
+     label.cex=0.2,
+     color="black",
+     vertex.color = "red",
+     edge.label= E(g2)$weight,
+     main = "species_rng")

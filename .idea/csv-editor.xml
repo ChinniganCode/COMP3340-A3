@@ -10,6 +10,41 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\datasets\USPresidency.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\datasets\alzeimers_test_set_ad.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\datasets\alzeimers_test_set_mci.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\datasets\alzeimers_test_set_ond_ra.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\datasets\alziemers_training_dataset.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\datasets\winequality-red.csv">
           <value>
             <Attribute>
@@ -24,6 +59,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\outputs\jaccard_col.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\outputs\jaccard_row.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\outputs\proteins_matrix.csv">
           <value>
             <Attribute>
@@ -32,6 +81,20 @@
           </value>
         </entry>
         <entry key="\outputs\samples_dist_matrix.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\outputs\samples_subset.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\outputs\species_rng.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
