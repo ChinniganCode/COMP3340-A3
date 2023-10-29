@@ -61,35 +61,17 @@ calc_jaccard_row <- function(input_matrix) {
   return(jaccard_measure_matrix)
 }
 
-
-get_graph_layout <- function(graph) {
-  layout <- layout_with_fr(graph)
-  return(layout)
-}
 save_graph <- function(graph, filename) {
   saveTo <- paste0("outputs/", filename, ".graphml")
   write_graph(graph, file = saveTo, format = "graphml")
 }
-plot_graph <- function(graph) {
-  filename <- deparse(substitute(graph))
-  layout <- layout_with_fr(graph)
-  plot(graph,
-       layout = layout,
-       vertex.size = 2,
-       vertex.label.color="black",
-       vertex.label.cex = 0.6,
-       edge.label.cex = 0.6,
-       label.cex=0.8,
-       color="black",
-       edge.label= E(graph)$weight,
-       vertex.label = NA,
-       main = filename)
-  save_graph(graph, filename)
-  #graph
-}
 
-red_dataset <- head(read.csv("datasets/winequality-red.csv", header = TRUE, sep = ";"), 100)
-# red_dataset <- read.csv("datasets/winequality-red.csv", header = TRUE, sep = ";")
+# red_dataset <- head(read.csv("datasets/winequality-red.csv", header = TRUE, sep = ";"), 500)
+red_dataset <- read.csv("datasets/winequality-red.csv", header = TRUE, sep = ";")
+
+classifications <- red_dataset$quality
+smallest_quality <- min(classifications)
+largest_quality <- max(classifications)
 
 red_disc <- equal_width_binning(red_dataset)
 formatted_matrix <- get_formatted_matrix(red_disc)
@@ -98,34 +80,43 @@ print_line("Ex. 1.a. Jaccard Matrix (Row-wise):")
 jaccard_row <- calc_jaccard_row(formatted_matrix)
 
 save_csv(jaccard_row)
-
+# neat matrix for plotting
 mm <- matrix(formatted_matrix, nrow=nrow(formatted_matrix), ncol=nrow(formatted_matrix))
 
 cg <- generate.complete.graph(1:nrow(mm),jaccard_row)
 
+color_palette <- colorRampPalette(c("red", "green"))(largest_quality - smallest_quality + 1)
+vertex_colors <- color_palette[classifications - smallest_quality + 1]
+
+
 
 mstree <- generate.mst(cg)
 
+
 plot(mstree$mst.graph,
-     vertex.size = 2,
-     vertex.color="pink",
+     vertex.size = 4,
+     vertex.label = classifications,
+     vertex.color=vertex_colors,
      layout=igraph::layout.fruchterman.reingold(mstree$mst.graph, niter=10000),
-     edge.label= round(E(mstree$mst.graph)$weight, 3),
+     # layout=igraph::layout.fruchterman.reingold(mstree$mst.graph, niter=10000, area=nrow(formatted_matrix)^3),
+     # edge.label= round(E(mstree$mst.graph)$weight, 3),
      main="MST",)
 save_graph(mstree$mst.graph, "MST-Graph")
 
 knntree <- generate.knn(cg, suggested.k=5)
 
 plot(knntree$knn.graph,
-     vertex.size = 2,
-     vertex.color="pink",
+     vertex.size = 4,
+     vertex.label = classifications,
+     vertex.color=vertex_colors,
      layout=igraph::layout.fruchterman.reingold(knntree$knn.graph, niter=10000),
-     edge.label= E(knntree$knn.graph)$weight,
+     # layout=igraph::layout.fruchterman.reingold(knntree$knn.graph, niter=10000, area=nrow(formatted_matrix)^3),
+     # edge.label= E(knntree$knn.graph)$weight,
      main="KNN",)
 save_graph(knntree$knn.graph, "kNN-Graph")
 
 results <- mst.knn(jaccard_row, 5)
-plot(results$network, vertex.size=8,
+plot(results$network, vertex.size=4,
      vertex.color=igraph::clusters(results$network)$membership,
      layout=igraph::layout.fruchterman.reingold(results$network, niter=10000),
      main=paste("MST-kNN \n Clustering solution \n Number of clusters=",results$cnumber,sep="" ))
