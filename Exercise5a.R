@@ -21,7 +21,7 @@ binarize_based_on_median <- function(df) {
   return(df)
 }
 calc_jaccard_measure <- function(A, B) {
-  return(1 -sum(A != B) / sum(A | B))
+  return(1 - (sum(A != B) / sum(A | B)))
 }
 calc_mst <- function(dist_matrix) {
   graph <- graph.adjacency(
@@ -68,7 +68,7 @@ save_graph <- function(graph, filename) {
 }
 plot_graph <- function(graph) {
   filename <- deparse(substitute(graph))
-  layout <- layout_with_gem(graph)
+  layout <- layout_with_fr(graph)
   plot(graph,
        layout = layout,
        vertex.size = 2,
@@ -92,7 +92,6 @@ formatted_matrix <- get_formatted_matrix(red_disc)
 
 print_line("Ex. 1.a. Jaccard Matrix (Row-wise):")
 jaccard_row <- calc_jaccard_row(formatted_matrix)
-plot(jaccard_row)
 save_csv(jaccard_row)
 #jaccard_row
 
